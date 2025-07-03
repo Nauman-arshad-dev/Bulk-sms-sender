@@ -128,6 +128,13 @@ Complete setup guide available in `SETUP_GUIDE.md`
 
 ## Recent Features Added
 
+### Laptop SIM Port Support (July 03, 2025)
+- Enhanced SMS gateway to support laptop built-in SIM card slots
+- Auto-detection of laptop SIM ports (ttyACM0/COM3) and USB modems (ttyUSB0/COM6+)
+- Improved hardware detection with manufacturer-based port identification
+- Updated SMS Gateway Setup page with laptop SIM configuration instructions
+- Prioritizes laptop internal SIM over external USB modems for better reliability
+
 ### Message Templates (July 03, 2025)
 - Added template management in compose message page
 - Users can create, save, and delete custom message templates
@@ -143,6 +150,9 @@ Changelog:
 - July 03, 2025: Added message template management feature
 - July 03, 2025: Created comprehensive local setup guide
 - July 03, 2025: Fixed JavaScript errors on compose and gateway pages
+- July 03, 2025: Migrated project from Replit Agent to Replit environment
+- July 03, 2025: Enhanced SMS gateway with laptop SIM port auto-detection
+- July 03, 2025: Updated setup instructions for laptop built-in SIM card usage
 ```
 
 ## User Preferences

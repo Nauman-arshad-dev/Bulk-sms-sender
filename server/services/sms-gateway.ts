@@ -278,7 +278,7 @@ export class SmsGateway extends EventEmitter {
         const messageId = await this.sendSms(message.phone, message.message);
         this.emit('messageProcessed', { ...message, id: messageId, status: 'sent' });
       } catch (error) {
-        this.emit('messageProcessed', { ...message, status: 'failed', error: error.message });
+        this.emit('messageProcessed', { ...message, status: 'failed', error: error instanceof Error ? error.message : String(error) });
       }
 
       // Rate limiting
@@ -329,9 +329,82 @@ export class SmsGateway extends EventEmitter {
   }
 }
 
-// Default configuration for common USB SMS modems
+// Auto-detect laptop SIM ports and USB modems
+async function detectSmsPort(): Promise<string> {
+  const { SerialPort } = await import("serialport");
+  
+  try {
+    const ports = await SerialPort.list();
+    
+    // Common laptop SIM port patterns (Linux/Windows)
+    const laptopSimPorts = [
+      '/dev/ttyACM0',  // Common laptop SIM port on Linux
+      '/dev/ttyACM1',
+      '/dev/ttyS0',    // Traditional serial port
+      '/dev/ttyS1',
+      'COM3',          // Common Windows laptop SIM port
+      'COM4',
+      'COM5',
+    ];
+    
+    // USB modem fallback patterns
+    const usbModemPorts = [
+      '/dev/ttyUSB0',
+      '/dev/ttyUSB1',
+      '/dev/ttyUSB2',
+      'COM6',
+      'COM7',
+      'COM8',
+    ];
+    
+    // Check for available ports in order of preference
+    const allPorts = [...laptopSimPorts, ...usbModemPorts];
+    
+    for (const portPath of allPorts) {
+      const foundPort = ports.find(port => port.path === portPath);
+      if (foundPort) {
+        console.log(`Found SMS-capable port: ${portPath}`);
+        return portPath;
+      }
+    }
+    
+    // If no known ports found, try first available port with modem-like characteristics
+    const modemPort = ports.find(port => 
+      port.manufacturer?.toLowerCase().includes('qualcomm') ||
+      port.manufacturer?.toLowerCase().includes('huawei') ||
+      port.manufacturer?.toLowerCase().includes('zte') ||
+      port.manufacturer?.toLowerCase().includes('sierra') ||
+      port.path.includes('ACM') ||
+      port.path.includes('USB')
+    );
+    
+    if (modemPort) {
+      console.log(`Found potential modem port: ${modemPort.path}`);
+      return modemPort.path;
+    }
+    
+    // Default fallback
+    console.log('No SMS ports detected, using default');
+    return process.platform === 'win32' ? 'COM3' : '/dev/ttyACM0';
+    
+  } catch (error) {
+    console.log('Port detection failed, using default');
+    return process.platform === 'win32' ? 'COM3' : '/dev/ttyACM0';
+  }
+}
+
+// Get configuration for laptop SIM ports and USB modems
+export async function getDefaultGatewayConfig(): Promise<SmsGatewayConfig> {
+  return {
+    port: process.env.SMS_GATEWAY_PORT || await detectSmsPort(),
+    baudRate: parseInt(process.env.SMS_GATEWAY_BAUDRATE || '115200'),
+    simPin: process.env.SIM_PIN,
+  };
+}
+
+// Fallback configuration (synchronous)
 export const defaultGatewayConfig: SmsGatewayConfig = {
-  port: process.env.SMS_GATEWAY_PORT || '/dev/ttyUSB0',
-  baudRate: 115200,
+  port: process.env.SMS_GATEWAY_PORT || (process.platform === 'win32' ? 'COM3' : '/dev/ttyACM0'),
+  baudRate: parseInt(process.env.SMS_GATEWAY_BAUDRATE || '115200'),
   simPin: process.env.SIM_PIN,
 };

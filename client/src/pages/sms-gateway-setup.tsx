@@ -174,15 +174,15 @@ export default function SmsGatewaySetup() {
               <div className="flex justify-between items-center py-2 border-b border-gray-100">
                 <span className="text-sm font-medium text-gray-600">Connection Type</span>
                 <div className="flex items-center">
-                  <Usb className="h-4 w-4 text-gray-400 mr-2" />
-                  <span className="text-sm text-gray-900">USB Modem</span>
+                  <Radio className="h-4 w-4 text-gray-400 mr-2" />
+                  <span className="text-sm text-gray-900">Laptop SIM / USB Modem</span>
                 </div>
               </div>
               
               <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                <span className="text-sm font-medium text-gray-600">Port</span>
+                <span className="text-sm font-medium text-gray-600">Port (Auto-detected)</span>
                 <span className="text-sm text-gray-900 font-mono">
-                  {import.meta.env.VITE_SMS_GATEWAY_PORT || '/dev/ttyUSB0'}
+                  {import.meta.env.VITE_SMS_GATEWAY_PORT || 'Auto-detect'}
                 </span>
               </div>
               
@@ -269,22 +269,24 @@ export default function SmsGatewaySetup() {
         <CardContent>
           <div className="space-y-6">
             <div>
-              <h4 className="font-medium text-gray-900 mb-3">Supported USB SMS Modems</h4>
+              <h4 className="font-medium text-gray-900 mb-3">Supported SMS Hardware</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h5 className="font-medium text-gray-900 mb-2">Huawei E3372</h5>
-                  <ul className="text-sm text-gray-600 space-y-1">
-                    <li>• 4G LTE USB dongle</li>
-                    <li>• Supports SMS and voice</li>
-                    <li>• Easy plug-and-play setup</li>
+                <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                  <h5 className="font-medium text-green-900 mb-2">Laptop Built-in SIM (Recommended)</h5>
+                  <ul className="text-sm text-green-700 space-y-1">
+                    <li>• Uses laptop's internal SIM card slot</li>
+                    <li>• No external hardware needed</li>
+                    <li>• Auto-detected on ttyACM0 or COM3</li>
+                    <li>• Ideal for laptops with SIM slots</li>
                   </ul>
                 </div>
                 <div className="bg-gray-50 p-4 rounded-lg">
-                  <h5 className="font-medium text-gray-900 mb-2">ZTE MF79U</h5>
+                  <h5 className="font-medium text-gray-900 mb-2">USB SMS Modems (Fallback)</h5>
                   <ul className="text-sm text-gray-600 space-y-1">
-                    <li>• 4G LTE USB modem</li>
-                    <li>• High-speed SMS sending</li>
-                    <li>• Reliable connection</li>
+                    <li>• Huawei E3372, ZTE MF79U</li>
+                    <li>• External USB device required</li>
+                    <li>• Detected on ttyUSB0 or COM6+</li>
+                    <li>• For laptops without SIM slots</li>
                   </ul>
                 </div>
               </div>
@@ -299,7 +301,7 @@ export default function SmsGatewaySetup() {
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-900">Insert SIM Card</p>
-                    <p className="text-sm text-gray-600">Insert your Lyca SIM card with unlimited SMS plan into the USB modem</p>
+                    <p className="text-sm text-gray-600">Insert your Lyca SIM card with unlimited SMS plan into your laptop's SIM card slot (or USB modem if no built-in slot)</p>
                   </div>
                 </div>
                 
@@ -308,8 +310,8 @@ export default function SmsGatewaySetup() {
                     2
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-900">Connect USB Modem</p>
-                    <p className="text-sm text-gray-600">Plug the USB modem into your computer's USB port</p>
+                    <p className="text-sm font-medium text-gray-900">Enable SIM Hardware</p>
+                    <p className="text-sm text-gray-600">The system will auto-detect your laptop's SIM port (ttyACM0/COM3) or USB modem (ttyUSB0/COM6+)</p>
                   </div>
                 </div>
                 
@@ -342,9 +344,10 @@ export default function SmsGatewaySetup() {
                   <h5 className="font-medium text-blue-800 mb-2">Important Notes</h5>
                   <ul className="text-sm text-blue-700 space-y-1">
                     <li>• Ensure your SIM card has sufficient credit for SMS sending</li>
-                    <li>• The USB modem should appear as a serial device (e.g., /dev/ttyUSB0 on Linux)</li>
-                    <li>• Some modems may require PIN unlock - set the SIM_PIN environment variable</li>
-                    <li>• For Windows users, check Device Manager for the correct COM port</li>
+                    <li>• Laptop SIM slots typically appear as /dev/ttyACM0 (Linux) or COM3 (Windows)</li>
+                    <li>• USB modems appear as /dev/ttyUSB0 (Linux) or COM6+ (Windows)</li>
+                    <li>• System automatically detects available SMS hardware</li>
+                    <li>• Set SIM_PIN environment variable if your SIM requires PIN unlock</li>
                   </ul>
                 </div>
               </div>

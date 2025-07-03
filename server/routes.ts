@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { z } from "zod";
 import { storage } from "./storage";
-import { SmsGateway, defaultGatewayConfig } from "./services/sms-gateway";
+import { SmsGateway, getDefaultGatewayConfig } from "./services/sms-gateway";
 import { MessageScheduler } from "./services/message-scheduler";
 import { CsvProcessor } from "./services/csv-processor";
 import {
@@ -14,9 +14,32 @@ import {
   insertContactSchema,
 } from "@shared/schema";
 
-// Initialize SMS Gateway and Scheduler
-const smsGateway = new SmsGateway(defaultGatewayConfig);
-const messageScheduler = new MessageScheduler(smsGateway);
+// Initialize SMS Gateway and Scheduler with auto-detection
+let smsGateway: SmsGateway;
+let messageScheduler: MessageScheduler;
+
+async function initializeGateway() {
+  try {
+    const config = await getDefaultGatewayConfig();
+    console.log(`Initializing SMS Gateway with port: ${config.port}`);
+    smsGateway = new SmsGateway(config);
+    messageScheduler = new MessageScheduler(smsGateway);
+    
+    // Try to connect to the gateway
+    const connected = await smsGateway.connect();
+    if (connected) {
+      console.log("SMS Gateway connected successfully");
+      messageScheduler.start();
+    } else {
+      console.log("SMS Gateway connection failed");
+    }
+  } catch (error) {
+    console.log(`Failed to initialize SMS Gateway: ${error}`);
+  }
+}
+
+// Initialize immediately
+initializeGateway();
 
 // WebSocket connections
 const wsConnections = new Set<WebSocket>();
